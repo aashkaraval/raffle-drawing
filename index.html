@@ -3,15 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPSWO Drawing #1</title>
+<title>PPSWO Raffle Drawing</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --pp-purple: #6B2D8B;
+  --pp-pink: #E03F8E;
+  --pp-light: #F2EFF4;
+  --pp-lavender: #C9B8D4;
+  --pp-mid: #9B59B6;
+  --pp-dark: #5B1F7A;
+  --pp-pale: #F7A8D0;
+}
+
 body {
-  background: #F2EFF4;
+  background: var(--pp-light);
   font-family: 'DM Sans', sans-serif;
-  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -20,33 +31,190 @@ body {
   position: relative;
 }
 
-#confetti-canvas {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 10;
+/* ── SCREENS ── */
+.screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100vh; padding: 24px; }
+.screen.active { display: flex; }
+
+/* ── SETUP SCREENS ── */
+.card {
+  background: #fff;
+  border: 2px solid var(--pp-lavender);
+  border-radius: 20px;
+  padding: 36px 40px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
 }
 
-header {
+.step-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--pp-pink);
+  margin-bottom: 8px;
+}
+
+.card h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: var(--pp-purple);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.card p {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* Upload area */
+#upload-zone {
+  border: 2.5px dashed var(--pp-lavender);
+  border-radius: 14px;
+  padding: 32px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 8px;
+}
+#upload-zone:hover, #upload-zone.drag { border-color: var(--pp-pink); background: #FFF5FA; }
+#upload-zone .icon { font-size: 36px; margin-bottom: 10px; }
+#upload-zone .uz-label { font-weight: 500; color: var(--pp-purple); font-size: 14px; }
+#upload-zone .uz-sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+#file-input { display: none; }
+#upload-status { font-size: 12px; color: var(--pp-pink); min-height: 18px; margin-top: 6px; }
+
+/* Drawing picker */
+.drawing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.drawing-opt {
+  border: 2px solid var(--pp-lavender);
+  border-radius: 14px;
+  padding: 18px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
   text-align: center;
+}
+.drawing-opt:hover { border-color: var(--pp-pink); background: #FFF5FA; }
+.drawing-opt.selected { border-color: var(--pp-purple); background: #F5EEF9; }
+.drawing-opt .d-num {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--pp-purple);
+  line-height: 1;
+}
+.drawing-opt .d-date {
+  font-size: 11px;
+  color: var(--pp-mid);
+  margin-top: 4px;
+  font-weight: 500;
+}
+.drawing-opt .d-prize {
+  font-size: 10px;
+  color: #aaa;
+  margin-top: 3px;
+}
+
+/* Exclude list */
+#exclude-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; min-height: 32px; }
+.excl-chip {
+  background: #FFF0F7;
+  border: 1.5px solid var(--pp-pale);
+  border-radius: 20px;
+  padding: 4px 10px 4px 12px;
+  font-size: 12px;
+  color: var(--pp-purple);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.excl-chip button {
+  background: none;
+  border: none;
+  color: var(--pp-pink);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+#exclude-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--pp-lavender);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--pp-purple);
+  background: #fff;
+  margin-bottom: 10px;
+  appearance: none;
+}
+#exclude-select:focus { outline: none; border-color: var(--pp-purple); }
+
+/* Buttons */
+.btn-primary {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--pp-pink);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 40px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  width: 100%;
+}
+.btn-primary:hover { background: #c4307a; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled { background: var(--pp-lavender); cursor: default; transform: none; }
+
+.btn-ghost {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  background: none;
+  border: none;
+  color: var(--pp-lavender);
+  cursor: pointer;
+  margin-top: 10px;
+  text-decoration: underline;
+}
+.btn-ghost:hover { color: var(--pp-purple); }
+
+.eligible-count {
+  font-size: 12px;
+  color: var(--pp-mid);
   margin-bottom: 16px;
+}
+
+/* ── WHEEL SCREEN ── */
+#wheel-screen {
+  gap: 0;
+}
+
+#wheel-screen header {
+  text-align: center;
+  margin-bottom: 12px;
   z-index: 2;
 }
 
-h1 {
+#wheel-screen h1 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: clamp(26px, 4vw, 44px);
-  color: #6B2D8B;
+  font-size: clamp(22px, 3.5vw, 40px);
+  color: var(--pp-purple);
   letter-spacing: -0.01em;
   line-height: 1;
 }
 
-.subtitle {
-  font-size: 12px;
-  color: #A084B0;
-  margin-top: 5px;
+.wheel-subtitle {
+  font-size: 11px;
+  color: var(--pp-lavender);
+  margin-top: 4px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 500;
@@ -54,18 +222,14 @@ h1 {
 
 #wheel-wrap {
   position: relative;
-  width: min(300px, 40vw);
-  height: min(300px, 40vw);
-  margin: 0 auto 16px;
+  width: min(360px, 46vw);
+  height: min(360px, 46vw);
+  margin: 0 auto 12px;
   z-index: 2;
   flex-shrink: 0;
 }
 
-#wheel-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
+#wheel-canvas { width: 100%; height: 100%; display: block; }
 
 #pointer {
   position: absolute;
@@ -73,21 +237,29 @@ h1 {
   left: 50%;
   transform: translateX(-50%);
   width: 0; height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 24px solid #E03F8E;
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 26px solid var(--pp-pink);
   z-index: 5;
-  filter: drop-shadow(0 2px 4px rgba(224,63,142,0.4));
+  filter: drop-shadow(0 2px 6px rgba(224,63,142,0.5));
 }
 
 #status {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  font-size: 18px;
-  color: #6B2D8B;
+  font-size: 16px;
+  color: var(--pp-purple);
   text-align: center;
-  min-height: 28px;
-  margin-bottom: 12px;
+  min-height: 24px;
+  margin-bottom: 10px;
+  z-index: 2;
+}
+
+.wheel-btns {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   z-index: 2;
 }
 
@@ -95,41 +267,45 @@ h1 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 18px;
-  background: #E03F8E;
+  background: var(--pp-pink);
   color: #fff;
   border: none;
   border-radius: 50px;
   padding: 12px 44px;
   cursor: pointer;
-  z-index: 2;
   letter-spacing: 0.03em;
   transition: background 0.15s, transform 0.1s;
-  margin-bottom: 10px;
-  display: block;
 }
 .btn-spin:hover { background: #c4307a; transform: translateY(-1px); }
 .btn-spin:active { transform: translateY(1px); }
-.btn-spin:disabled { background: #C9B8D4; cursor: default; transform: none; }
+.btn-spin:disabled { background: var(--pp-lavender); cursor: default; transform: none; }
 
-.btn-data {
-  font-family: 'DM Sans', sans-serif;
+.btn-back {
   font-size: 11px;
   background: none;
-  border: 1px solid #C9B8D4;
-  color: #A084B0;
-  border-radius: 20px;
-  padding: 5px 14px;
+  border: none;
+  color: var(--pp-lavender);
   cursor: pointer;
-  z-index: 2;
-  transition: color 0.2s, border-color 0.2s;
-  display: block;
+  text-decoration: underline;
 }
-.btn-data:hover { color: #6B2D8B; border-color: #6B2D8B; }
+.btn-back:hover { color: var(--pp-purple); }
 
-/* Winner overlay */
+.btn-data-sm {
+  font-size: 11px;
+  background: none;
+  border: 1px solid var(--pp-lavender);
+  color: var(--pp-lavender);
+  border-radius: 20px;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-data-sm:hover { color: var(--pp-purple); border-color: var(--pp-purple); }
+
+/* Winner card overlay */
 #winner-overlay {
   display: none;
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(107,45,139,0.55);
   z-index: 30;
@@ -140,11 +316,11 @@ h1 {
 
 #winner-card {
   background: #fff;
-  border: 4px solid #E03F8E;
+  border: 4px solid var(--pp-pink);
   border-radius: 20px;
   padding: 36px 44px;
   text-align: center;
-  max-width: 420px;
+  max-width: 400px;
   width: 88%;
   animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
 }
@@ -154,60 +330,57 @@ h1 {
   100% { transform: scale(1); opacity: 1; }
 }
 
-#winner-card .label {
+#winner-card .wc-label {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  font-size: 12px;
-  color: #E03F8E;
+  font-size: 11px;
+  color: var(--pp-pink);
   letter-spacing: 0.15em;
   text-transform: uppercase;
   margin-bottom: 10px;
 }
-
-#winner-card .name {
+#winner-card .wc-name {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: clamp(32px, 6vw, 52px);
-  color: #6B2D8B;
+  font-size: clamp(30px, 5.5vw, 48px);
+  color: var(--pp-purple);
   line-height: 1.1;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
-
-#winner-card .detail {
-  font-size: 13px;
-  color: #A084B0;
-  margin-bottom: 24px;
+#winner-card .wc-detail {
+  font-size: 12px;
+  color: var(--pp-lavender);
+  margin-bottom: 18px;
 }
-
-#winner-card .prize {
+#winner-card .wc-prize {
   background: #FFF0F7;
-  border: 1.5px solid #F5B8D8;
+  border: 1.5px solid var(--pp-pale);
   border-radius: 10px;
   padding: 10px 16px;
   font-size: 13px;
-  color: #6B2D8B;
+  color: var(--pp-purple);
   font-weight: 500;
   margin-bottom: 20px;
 }
-
 .btn-close {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 14px;
-  background: #6B2D8B;
+  background: var(--pp-purple);
   color: #fff;
   border: none;
   border-radius: 50px;
   padding: 10px 32px;
   cursor: pointer;
   transition: background 0.15s;
+  width: 100%;
 }
-.btn-close:hover { background: #55226F; }
+.btn-close:hover { background: var(--pp-dark); }
 
 /* Data modal */
 #modal-bg {
   display: none;
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(107,45,139,0.4);
   z-index: 20;
@@ -215,10 +388,9 @@ h1 {
   justify-content: center;
 }
 #modal-bg.open { display: flex; }
-
 #modal {
   background: #fff;
-  border: 2px solid #C9B8D4;
+  border: 2px solid var(--pp-lavender);
   border-radius: 16px;
   padding: 24px;
   width: 90%;
@@ -226,85 +398,133 @@ h1 {
   max-height: 80vh;
   overflow-y: auto;
 }
-
 #modal h2 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 20px;
-  color: #6B2D8B;
+  font-size: 18px;
+  color: var(--pp-purple);
   margin-bottom: 4px;
 }
-
-#modal p {
-  font-size: 11px;
-  color: #A084B0;
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.modal-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#modal p { font-size: 11px; color: #aaa; margin-bottom: 14px; line-height: 1.5; }
+.modal-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .modal-table th {
-  color: #6B2D8B;
+  color: var(--pp-purple);
   text-align: left;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border-bottom: 1.5px solid #EDE5F2;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-family: 'Montserrat', sans-serif;
 }
-.modal-table td {
-  color: #333;
-  padding: 7px 8px;
-  border-bottom: 1px solid #F5F0F8;
-}
+.modal-table td { color: #333; padding: 6px 8px; border-bottom: 1px solid #F5F0F8; }
+.modal-table tr.excluded td { color: #bbb; text-decoration: line-through; }
 .modal-table tr:last-child td { border-bottom: none; }
-.tix { color: #E03F8E !important; font-weight: 700; }
-
+.tix { color: var(--pp-pink) !important; font-weight: 700; }
 .modal-close {
-  display: block;
-  margin: 16px auto 0;
-  background: none;
-  border: 1.5px solid #C9B8D4;
-  color: #A084B0;
-  border-radius: 20px;
-  padding: 6px 20px;
-  cursor: pointer;
-  font-size: 12px;
-  font-family: 'DM Sans', sans-serif;
-  transition: color 0.15s, border-color 0.15s;
+  display: block; margin: 14px auto 0;
+  background: none; border: 1.5px solid var(--pp-lavender);
+  color: var(--pp-lavender); border-radius: 20px;
+  padding: 5px 18px; cursor: pointer; font-size: 11px;
 }
-.modal-close:hover { color: #6B2D8B; border-color: #6B2D8B; }
+.modal-close:hover { color: var(--pp-purple); border-color: var(--pp-purple); }
+
+/* Confetti canvas */
+#confetti-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 10;
+}
 </style>
 </head>
 <body>
 
 <canvas id="confetti-canvas"></canvas>
 
-<header>
-  <h1>PPSWO Drawing #1</h1>
-  <div class="subtitle">April 30 · PTO Day or $150 Gift Card</div>
-</header>
-
-<div id="wheel-wrap">
-  <div id="pointer"></div>
-  <canvas id="wheel-canvas"></canvas>
+<!-- STEP 1: Upload -->
+<div class="screen active" id="screen-upload">
+  <div class="card">
+    <div class="step-label">Step 1 of 3</div>
+    <h2>Upload your pledge file</h2>
+    <p>Upload the Excel file with your pledge data. It needs a "Name" column and a "Timestamp" column.</p>
+    <div id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+      <div class="icon">📂</div>
+      <div class="uz-label">Click to upload or drag &amp; drop</div>
+      <div class="uz-sub">.xlsx files only</div>
+    </div>
+    <input type="file" id="file-input" accept=".xlsx" onchange="handleFile(this.files[0])">
+    <div id="upload-status"></div>
+  </div>
 </div>
 
-<div id="status">Ready to spin!</div>
+<!-- STEP 2: Pick drawing -->
+<div class="screen" id="screen-drawing">
+  <div class="card">
+    <div class="step-label">Step 2 of 3</div>
+    <h2>Which drawing?</h2>
+    <p>Select the drawing you want to run. Eligibility cutoffs and prizes are applied automatically.</p>
+    <div class="drawing-grid">
+      <div class="drawing-opt" id="opt-1" onclick="selectDrawing(1)">
+        <div class="d-num">#1</div>
+        <div class="d-date">Apr 24 – Apr 30</div>
+        <div class="d-prize">PTO Day or $150 gift card</div>
+      </div>
+      <div class="drawing-opt" id="opt-2" onclick="selectDrawing(2)">
+        <div class="d-num">#2</div>
+        <div class="d-date">Apr 24 – May 5</div>
+        <div class="d-prize">1 mo. parking or $100 gift card</div>
+      </div>
+    </div>
+    <button class="btn-primary" id="btn-drawing-next" disabled onclick="goToExclude()">Next →</button>
+    <button class="btn-ghost" onclick="goTo('screen-upload')">← Back</button>
+  </div>
+</div>
 
-<button class="btn-spin" id="spin-btn" onclick="startSpin()">Spin to Win!</button>
-<button class="btn-data" onclick="openModal()">View participant data</button>
+<!-- STEP 3: Exclude previous winners -->
+<div class="screen" id="screen-exclude">
+  <div class="card">
+    <div class="step-label">Step 3 of 3</div>
+    <h2>Exclude previous winners</h2>
+    <p>If someone already won a prize, add them here so they're removed from this drawing.</p>
+    <select id="exclude-select" onchange="addExclude()">
+      <option value="">Select a name to exclude...</option>
+    </select>
+    <div id="exclude-list"></div>
+    <div class="eligible-count" id="eligible-count"></div>
+    <button class="btn-primary" onclick="goToWheel()">Start Drawing →</button>
+    <button class="btn-ghost" onclick="goTo('screen-drawing')">← Back</button>
+  </div>
+</div>
 
-<!-- Winner popup -->
-<div id="winner-overlay" class="show" style="display:none;">
+<!-- WHEEL SCREEN -->
+<div class="screen" id="wheel-screen">
+  <header>
+    <h1 id="wheel-title">PPSWO Drawing</h1>
+    <div class="wheel-subtitle" id="wheel-subtitle"></div>
+  </header>
+
+  <div id="wheel-wrap">
+    <div id="pointer"></div>
+    <canvas id="wheel-canvas"></canvas>
+  </div>
+
+  <div id="status">Ready to spin!</div>
+
+  <div class="wheel-btns">
+    <button class="btn-spin" id="spin-btn" onclick="startSpin()">Spin to Win!</button>
+    <button class="btn-data-sm" onclick="openModal()">View participant data</button>
+    <button class="btn-back" onclick="goTo('screen-drawing')">← Change drawing</button>
+  </div>
+</div>
+
+<!-- Winner overlay -->
+<div id="winner-overlay">
   <div id="winner-card">
-    <div class="label">Drawing #1 Winner</div>
-    <div class="name" id="card-name"></div>
-    <div class="detail" id="card-detail"></div>
-    <div class="prize">Prize: PTO Day &nbsp;·&nbsp; or $150 gift card of choice</div>
-    <button class="btn-close" onclick="closeWinner()">Awesome!</button>
+    <div class="wc-label" id="wc-label">Winner!</div>
+    <div class="wc-name" id="wc-name"></div>
+    <div class="wc-detail" id="wc-detail"></div>
+    <div class="wc-prize" id="wc-prize"></div>
+    <button class="btn-close" onclick="closeWinner()">Congratulations! 🎉</button>
   </div>
 </div>
 
@@ -312,9 +532,9 @@ h1 {
 <div id="modal-bg" onclick="bgClick(event)">
   <div id="modal">
     <h2>Participant data</h2>
-    <p>Tickets weighted by pledge date — earlier pledges earn more entries. Winner drawn using cryptographic randomness (crypto.getRandomValues).</p>
+    <p>Tickets weighted by pledge date. Earlier pledges earn more entries. Uses crypto.getRandomValues for fairness.</p>
     <table class="modal-table">
-      <thead><tr><th>Name</th><th>Pledged</th><th>Tickets</th></tr></thead>
+      <thead><tr><th>Name</th><th>Pledged</th><th>Tickets</th><th>Status</th></tr></thead>
       <tbody id="modal-body"></tbody>
     </table>
     <button class="modal-close" onclick="closeModal()">Close</button>
@@ -322,57 +542,228 @@ h1 {
 </div>
 
 <script>
-const pledgers = [
-  { name: "Nan Whaley",         date: "Apr 24", entries: 11 },
-  { name: "Kathryn Jakischa",   date: "Apr 24", entries: 11 },
-  { name: "Carolyn Crowner",    date: "Apr 24", entries: 11 },
-  { name: "Gwynne Rohrs",       date: "Apr 24", entries: 11 },
-  { name: "Katie Brokesh",      date: "Apr 24", entries: 11 },
-  { name: "Macon Hall",         date: "Apr 24", entries: 11 },
-  { name: "Aeran Trick",        date: "Apr 24", entries: 11 },
-  { name: "Nick Norman",        date: "Apr 25", entries: 10 },
-  { name: "Holly Wanek",        date: "Apr 27", entries: 9  },
-  { name: "deanah gipson",      date: "Apr 28", entries: 9  },
-  { name: "Danielle Hemphill",  date: "Apr 29", entries: 8  },
-  { name: "Sharon Liner",       date: "Apr 29", entries: 8  },
-  { name: "Rachael Jackson",    date: "Apr 29", entries: 8  },
-  { name: "Taylor Freeman",     date: "Apr 30", entries: 7  },
-  { name: "Audra Trillana",     date: "Apr 30", entries: 7  },
-  { name: "Stephany Kleinberg", date: "Apr 30", entries: 7  },
-  { name: "Elizabeth McDaniel", date: "Apr 30", entries: 7  },
-  { name: "Sarah Dahlston",     date: "Apr 30", entries: 7  },
-];
-
-const SLICE_COLORS = [
-  "#6B2D8B","#E03F8E","#9B59B6","#F7A8D0","#5B1F7A",
-  "#E03F8E","#6B2D8B","#C9B8D4","#9B59B6","#E03F8E",
-  "#6B2D8B","#F7A8D0","#5B1F7A","#9B59B6","#E03F8E",
-  "#6B2D8B","#C9B8D4","#E03F8E"
-];
-const TEXT_LIGHT = new Set([3,7,11]);
-
-const pool = [];
-pledgers.forEach((p,i) => { for(let j=0;j<p.entries;j++) pool.push(i); });
-
-function cr(max){ const a=new Uint32Array(1); crypto.getRandomValues(a); return a[0]%max; }
-
-const wCanvas = document.getElementById('wheel-canvas');
-const wCtx = wCanvas.getContext('2d');
-const SIZE = 600;
-wCanvas.width = SIZE; wCanvas.height = SIZE;
-const CX = SIZE/2, CY = SIZE/2, R = SIZE/2 - 8;
-const N = pledgers.length;
-const SLICE = (2*Math.PI)/N;
-
-let angle = 0;
-let animId = null;
+// ── STATE ──
+let allPledgers = [];
+let selectedDrawing = null;
+let excludedNames = new Set();
+let eligiblePledgers = [];
+let pool = [];
 let winnerIdx = null;
+let spinning = false;
+let angle = 0;
 let totalRotation = 0;
 let targetTotal = 0;
-let spinning = false;
+let animId = null;
+
+const CUTOFFS = {
+  1: new Date('2026-04-30T12:00:00'),
+  2: new Date('2026-05-05T12:00:00'),
+};
+
+const PRIZES = {
+  1: 'PTO Day  ·  or $150 gift card of choice',
+  2: '1 month parking  ·  or $100 gift card of choice',
+};
+
+const ENTRY_RULES = [
+  { date: '2026-04-24', entries: 11 },
+  { date: '2026-04-25', entries: 10 },
+  { date: '2026-04-26', entries: 9 },
+  { date: '2026-04-27', entries: 9 },
+  { date: '2026-04-28', entries: 9 },
+  { date: '2026-04-29', entries: 8 },
+  { date: '2026-04-30', entries: 7 },
+  { date: '2026-05-01', entries: 6 },
+  { date: '2026-05-02', entries: 5 },
+  { date: '2026-05-03', entries: 4 },
+  { date: '2026-05-04', entries: 4 },
+  { date: '2026-05-05', entries: 4 },
+];
+
+function getEntries(dt) {
+  const d = dt.toISOString().slice(0,10);
+  const rule = ENTRY_RULES.find(r => r.date === d);
+  return rule ? rule.entries : 1;
+}
+
+// ── FILE HANDLING ──
+function dragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag'); }
+function dragLeave() { document.getElementById('upload-zone').classList.remove('drag'); }
+function dropFile(e) { e.preventDefault(); dragLeave(); handleFile(e.dataTransfer.files[0]); }
+
+function handleFile(file) {
+  if(!file || !file.name.endsWith('.xlsx')) {
+    document.getElementById('upload-status').textContent = 'Please upload an .xlsx file.';
+    return;
+  }
+  document.getElementById('upload-status').textContent = 'Reading file...';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws);
+      if(!rows.length) throw new Error('No data found');
+
+      // find name + timestamp columns case-insensitively
+      const sample = rows[0];
+      const keys = Object.keys(sample);
+      const nameKey = keys.find(k => k.toLowerCase().includes('name'));
+      const tsKey = keys.find(k => k.toLowerCase().includes('time') || k.toLowerCase().includes('stamp') || k.toLowerCase().includes('date'));
+
+      if(!nameKey) throw new Error('Could not find a Name column');
+      if(!tsKey) throw new Error('Could not find a Timestamp column');
+
+      allPledgers = rows.map(r => {
+        const raw = r[tsKey];
+        let dt;
+        if(raw instanceof Date) dt = raw;
+        else if(typeof raw === 'number') {
+          // Excel serial date
+          dt = new Date(Math.round((raw - 25569) * 86400 * 1000));
+        } else {
+          dt = new Date(raw);
+        }
+        return { name: String(r[nameKey]).trim(), datetime: dt };
+      }).filter(p => p.name && !isNaN(p.datetime));
+
+      if(!allPledgers.length) throw new Error('No valid rows found');
+      document.getElementById('upload-status').textContent = `✓ Loaded ${allPledgers.length} pledgers`;
+      setTimeout(() => goTo('screen-drawing'), 700);
+    } catch(err) {
+      document.getElementById('upload-status').textContent = 'Error: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── NAVIGATION ──
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── DRAWING SELECTION ──
+function selectDrawing(n) {
+  selectedDrawing = n;
+  document.querySelectorAll('.drawing-opt').forEach(o => o.classList.remove('selected'));
+  document.getElementById('opt-'+n).classList.add('selected');
+  document.getElementById('btn-drawing-next').disabled = false;
+}
+
+function goToExclude() {
+  if(!selectedDrawing) return;
+  const cutoff = CUTOFFS[selectedDrawing];
+
+  // filter eligible pledgers for this drawing
+  const eligible = allPledgers.filter(p => p.datetime <= cutoff);
+
+  // populate exclude dropdown
+  const sel = document.getElementById('exclude-select');
+  sel.innerHTML = '<option value="">Select a name to exclude...</option>';
+  eligible.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.name;
+    opt.textContent = p.name;
+    sel.appendChild(opt);
+  });
+
+  excludedNames = new Set();
+  document.getElementById('exclude-list').innerHTML = '';
+  updateEligibleCount();
+  goTo('screen-exclude');
+}
+
+function addExclude() {
+  const sel = document.getElementById('exclude-select');
+  const name = sel.value;
+  if(!name || excludedNames.has(name)) { sel.value = ''; return; }
+  excludedNames.add(name);
+  sel.value = '';
+  renderExcludeChips();
+  updateEligibleCount();
+}
+
+function removeExclude(name) {
+  excludedNames.delete(name);
+  renderExcludeChips();
+  updateEligibleCount();
+}
+
+function renderExcludeChips() {
+  const el = document.getElementById('exclude-list');
+  el.innerHTML = '';
+  excludedNames.forEach(name => {
+    const chip = document.createElement('div');
+    chip.className = 'excl-chip';
+    chip.innerHTML = `${name} <button onclick="removeExclude('${name.replace(/'/g,"\\'")}')">×</button>`;
+    el.appendChild(chip);
+  });
+}
+
+function updateEligibleCount() {
+  const cutoff = CUTOFFS[selectedDrawing];
+  const count = allPledgers.filter(p => p.datetime <= cutoff && !excludedNames.has(p.name)).length;
+  document.getElementById('eligible-count').textContent = `${count} eligible participant${count !== 1 ? 's' : ''} in this drawing`;
+}
+
+// ── WHEEL SETUP ──
+function goToWheel() {
+  const cutoff = CUTOFFS[selectedDrawing];
+  eligiblePledgers = allPledgers
+    .filter(p => p.datetime <= cutoff && !excludedNames.has(p.name))
+    .map(p => ({
+      ...p,
+      entries: getEntries(p.datetime),
+      dateStr: p.datetime.toLocaleDateString('en-US', { month:'short', day:'numeric' })
+    }));
+
+  if(!eligiblePledgers.length) {
+    alert('No eligible participants!');
+    return;
+  }
+
+  pool = [];
+  eligiblePledgers.forEach((p,i) => { for(let j=0;j<p.entries;j++) pool.push(i); });
+
+  document.getElementById('wheel-title').textContent = `PPSWO Drawing #${selectedDrawing}`;
+  const cutoffStr = selectedDrawing === 1 ? 'Apr 24 – Apr 30' : 'Apr 24 – May 5';
+  document.getElementById('wheel-subtitle').textContent = `${cutoffStr}  ·  ${eligiblePledgers.length} participants  ·  ${pool.length} tickets`;
+
+  angle = 0; totalRotation = 0; targetTotal = 0; winnerIdx = null; spinning = false;
+  document.getElementById('spin-btn').disabled = false;
+  document.getElementById('status').textContent = 'Ready to spin!';
+
+  buildModal();
+  goTo('wheel-screen');
+  initWheel();
+}
+
+// ── WHEEL DRAWING ──
+const SLICE_COLORS = [
+  '#6B2D8B','#E03F8E','#9B59B6','#F7A8D0','#5B1F7A',
+  '#E03F8E','#6B2D8B','#C9B8D4','#9B59B6','#E03F8E',
+  '#6B2D8B','#F7A8D0','#5B1F7A','#9B59B6','#E03F8E',
+  '#6B2D8B','#C9B8D4','#E03F8E','#9B59B6','#5B1F7A',
+];
+const LIGHT_SLICES = new Set([3,7,11]);
+
+let wCanvas, wCtx, SIZE, CX, CY, R, N, SLICE;
+
+function initWheel() {
+  wCanvas = document.getElementById('wheel-canvas');
+  wCtx = wCanvas.getContext('2d');
+  SIZE = 720;
+  wCanvas.width = SIZE; wCanvas.height = SIZE;
+  CX = SIZE/2; CY = SIZE/2; R = SIZE/2 - 10;
+  N = eligiblePledgers.length;
+  SLICE = (2*Math.PI)/N;
+  drawWheel(angle);
+}
 
 function drawWheel(a) {
   wCtx.clearRect(0,0,SIZE,SIZE);
+
   for(let i=0;i<N;i++){
     const s = a + i*SLICE, e = s + SLICE;
     wCtx.beginPath();
@@ -382,29 +773,41 @@ function drawWheel(a) {
     wCtx.fillStyle = SLICE_COLORS[i % SLICE_COLORS.length];
     wCtx.fill();
     wCtx.strokeStyle = '#F2EFF4';
-    wCtx.lineWidth = 2;
+    wCtx.lineWidth = 3;
     wCtx.stroke();
 
+    // label — bigger, more legible
     wCtx.save();
     wCtx.translate(CX,CY);
     wCtx.rotate(s + SLICE/2);
-    wCtx.textAlign = 'right';
-    const isLight = TEXT_LIGHT.has(i % SLICE_COLORS.length);
+
+    const isLight = LIGHT_SLICES.has(i % SLICE_COLORS.length);
     wCtx.fillStyle = isLight ? '#6B2D8B' : '#fff';
-    wCtx.font = `bold 12px 'DM Sans', sans-serif`;
-    const label = pledgers[i].name.split(' ')[0];
-    wCtx.fillText(label, R - 14, 4);
+
+    // dynamic font size based on number of participants
+    const fontSize = N <= 10 ? 16 : N <= 14 ? 14 : N <= 18 ? 13 : 11;
+    wCtx.font = `700 ${fontSize}px 'DM Sans', sans-serif`;
+    wCtx.textAlign = 'right';
+    wCtx.textBaseline = 'middle';
+
+    // Use first name only, truncate if needed
+    let label = eligiblePledgers[i].name.split(' ')[0];
+    if(label.length > 11) label = label.slice(0,10) + '…';
+    wCtx.fillText(label, R - 16, 0);
     wCtx.restore();
   }
 
-  // center hub
-  wCtx.beginPath(); wCtx.arc(CX,CY,24,0,Math.PI*2);
+  // Hub
+  wCtx.beginPath(); wCtx.arc(CX,CY,28,0,Math.PI*2);
   wCtx.fillStyle = '#F2EFF4'; wCtx.fill();
-  wCtx.strokeStyle = '#6B2D8B'; wCtx.lineWidth = 3; wCtx.stroke();
+  wCtx.strokeStyle = '#6B2D8B'; wCtx.lineWidth = 4; wCtx.stroke();
 
-  wCtx.beginPath(); wCtx.arc(CX,CY,14,0,Math.PI*2);
+  wCtx.beginPath(); wCtx.arc(CX,CY,16,0,Math.PI*2);
   wCtx.fillStyle = '#E03F8E'; wCtx.fill();
 }
+
+// ── SPIN LOGIC ──
+function cr(max){ const a=new Uint32Array(1); crypto.getRandomValues(a); return a[0]%max; }
 
 function getWinnerAtAngle(a) {
   const norm = ((-a % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
@@ -415,17 +818,14 @@ function startSpin() {
   if(spinning) return;
   spinning = true;
   document.getElementById('spin-btn').disabled = true;
-  document.getElementById('status').textContent = 'Spinning...';
+  document.getElementById('status').textContent = 'Spinning…';
 
-  // pick winner from weighted pool
   winnerIdx = pool[cr(pool.length)];
 
-  // figure out how far we need to spin so winnerIdx lands under pointer
   const curSlice = getWinnerAtAngle(angle);
   const stepsNeeded = ((winnerIdx - curSlice) + N) % N;
-  // land in middle-ish of the slice with slight random offset
-  const landingOffset = SLICE * (0.2 + cr(600)/1000 * 0.6);
-  const spinRounds = (5 + cr(4)) * 2 * Math.PI; // 5-8 full rotations
+  const landingOffset = SLICE * (0.15 + (cr(700)/1000) * 0.7);
+  const spinRounds = (6 + cr(4)) * 2 * Math.PI;
   targetTotal = totalRotation + spinRounds + stepsNeeded * SLICE + landingOffset;
 
   animId = requestAnimationFrame(animSpin);
@@ -434,19 +834,17 @@ function startSpin() {
 function animSpin() {
   const remaining = targetTotal - totalRotation;
 
-  if(remaining <= 0) {
+  if(remaining <= 0.008) {
     totalRotation = targetTotal;
     angle = -totalRotation;
     drawWheel(angle);
     spinning = false;
-    setTimeout(revealWinner, 300);
+    setTimeout(revealWinner, 350);
     return;
   }
 
-  // ease out — fast at start, slow at end
-  const progress = 1 - remaining / (targetTotal - (totalRotation - remaining < 0 ? 0 : totalRotation - remaining));
-  const speed = Math.max(0.012, 0.38 * Math.pow(remaining / (targetTotal * 0.5 + 0.001), 0.6));
-
+  // smooth ease-out curve
+  const speed = Math.max(0.010, 0.40 * Math.pow(remaining / Math.max(targetTotal * 0.45, 1), 0.55));
   totalRotation += Math.min(speed, remaining);
   angle = -totalRotation;
   drawWheel(angle);
@@ -454,36 +852,48 @@ function animSpin() {
 }
 
 function revealWinner() {
-  const w = pledgers[winnerIdx];
-  document.getElementById('card-name').textContent = w.name;
-  document.getElementById('card-detail').textContent = `Pledged ${w.date} · ${w.entries} tickets in the pool`;
-  document.getElementById('winner-overlay').style.display = 'flex';
+  const w = eligiblePledgers[winnerIdx];
+  document.getElementById('wc-label').textContent = `Drawing #${selectedDrawing} Winner`;
+  document.getElementById('wc-name').textContent = w.name;
+  document.getElementById('wc-detail').textContent = `Pledged ${w.dateStr}  ·  ${w.entries} tickets in pool`;
+  document.getElementById('wc-prize').textContent = 'Prize: ' + PRIZES[selectedDrawing];
+  document.getElementById('winner-overlay').classList.add('show');
   document.getElementById('status').textContent = '';
   launchConfetti();
 }
 
 function closeWinner() {
-  document.getElementById('winner-overlay').style.display = 'none';
+  document.getElementById('winner-overlay').classList.remove('show');
   document.getElementById('spin-btn').disabled = false;
-  document.getElementById('status').textContent = 'Ready to spin!';
+  document.getElementById('status').textContent = 'Ready to spin again!';
   winnerIdx = null;
+}
+
+// ── MODAL ──
+function buildModal() {
+  const tbody = document.getElementById('modal-body');
+  tbody.innerHTML = '';
+  const cutoff = CUTOFFS[selectedDrawing];
+  const allEligible = allPledgers.filter(p => p.datetime <= cutoff);
+  allEligible.forEach(p => {
+    const isExcl = excludedNames.has(p.name);
+    const entries = getEntries(p.datetime);
+    const dateStr = p.datetime.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const tr = document.createElement('tr');
+    if(isExcl) tr.className = 'excluded';
+    tr.innerHTML = `<td>${p.name}</td><td>${dateStr}</td><td class="tix">${isExcl ? '—' : entries}</td><td style="font-size:10px;color:${isExcl?'#ccc':'#aaa'}">${isExcl?'excluded':'eligible'}</td>`;
+    tbody.appendChild(tr);
+  });
+  const tot = document.createElement('tr');
+  tot.innerHTML = `<td colspan="2" style="color:#bbb;font-size:10px;padding-top:10px;">Total tickets in pool</td><td class="tix" style="padding-top:10px;">${pool.length}</td><td></td>`;
+  tbody.appendChild(tot);
 }
 
 function openModal() { document.getElementById('modal-bg').classList.add('open'); }
 function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
 function bgClick(e) { if(e.target===document.getElementById('modal-bg')) closeModal(); }
 
-const tbody = document.getElementById('modal-body');
-pledgers.forEach(p => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `<td>${p.name}</td><td>${p.date}</td><td class="tix">${p.entries}</td>`;
-  tbody.appendChild(tr);
-});
-const tot = document.createElement('tr');
-tot.innerHTML = `<td colspan="2" style="color:#A084B0;font-size:11px;padding-top:10px;">Total tickets in pool</td><td class="tix" style="padding-top:10px;">164</td>`;
-tbody.appendChild(tot);
-
-// Confetti
+// ── CONFETTI ──
 const cCanvas = document.getElementById('confetti-canvas');
 const cCtx = cCanvas.getContext('2d');
 let pieces = [];
@@ -494,11 +904,11 @@ resizeC(); window.addEventListener('resize',resizeC);
 
 function launchConfetti(){
   pieces=[];
-  for(let i=0;i<250;i++){
+  for(let i=0;i<260;i++){
     pieces.push({
       x: Math.random()*cCanvas.width,
-      y: -10-Math.random()*250,
-      w: 9+Math.random()*9, h: 5+Math.random()*5,
+      y: -20-Math.random()*300,
+      w: 9+Math.random()*10, h: 5+Math.random()*5,
       color: CCOLORS[Math.floor(Math.random()*CCOLORS.length)],
       vx: (Math.random()-0.5)*6,
       vy: 2+Math.random()*5,
@@ -526,8 +936,6 @@ function animC(){
   if(any) requestAnimationFrame(animC);
   else cCtx.clearRect(0,0,cCanvas.width,cCanvas.height);
 }
-
-drawWheel(angle);
 </script>
 </body>
 </html>
