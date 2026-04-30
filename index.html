@@ -3,296 +3,323 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPSWO Drawing #1 — April 30</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<title>PPSWO Drawing #1</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --gold: #FAC775;
-    --gold-dark: #BA7517;
-    --purple: #7F77DD;
-    --purple-deep: #26215C;
-    --purple-mid: #534AB7;
-    --purple-light: #EEEDFE;
-    --bg: #0f0f1e;
-    --bg2: #1a1a2e;
-    --bg3: #12122a;
-    --text: #e8e6ff;
-    --muted: #6b6899;
-  }
+body {
+  background: #F2EFF4;
+  font-family: 'DM Sans', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px 16px 64px;
-  }
+#confetti-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
 
-  header {
-    text-align: center;
-    margin-bottom: 36px;
-  }
+header {
+  text-align: center;
+  margin-bottom: 16px;
+  z-index: 2;
+}
 
-  .eyebrow {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--purple);
-    margin-bottom: 8px;
-  }
+h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: clamp(26px, 4vw, 44px);
+  color: #6B2D8B;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
 
-  h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(48px, 10vw, 80px);
-    color: var(--gold);
-    line-height: 1;
-    letter-spacing: 0.03em;
-    margin-bottom: 6px;
-  }
+.subtitle {
+  font-size: 12px;
+  color: #A084B0;
+  margin-top: 5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
 
-  .sub {
-    font-size: 13px;
-    color: var(--muted);
-  }
+#wheel-wrap {
+  position: relative;
+  width: min(300px, 40vw);
+  height: min(300px, 40vw);
+  margin: 0 auto 16px;
+  z-index: 2;
+  flex-shrink: 0;
+}
 
-  .stage {
-    background: var(--bg2);
-    border: 1px solid rgba(127,119,221,0.2);
-    border-radius: 20px;
-    padding: 32px 24px;
-    width: 100%;
-    max-width: 520px;
-    text-align: center;
-    margin-bottom: 24px;
-  }
+#wheel-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
-  #drum-wrap {
-    position: relative;
-    width: 280px;
-    height: 280px;
-    margin: 0 auto 24px;
-  }
+#pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 24px solid #E03F8E;
+  z-index: 5;
+  filter: drop-shadow(0 2px 4px rgba(224,63,142,0.4));
+}
 
-  #drum-canvas {
-    display: block;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-  }
+#status {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #6B2D8B;
+  text-align: center;
+  min-height: 28px;
+  margin-bottom: 12px;
+  z-index: 2;
+}
 
-  #drum-label {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 12px;
-    color: var(--muted);
-    pointer-events: none;
-    text-align: center;
-    line-height: 1.5;
-  }
+.btn-spin {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  background: #E03F8E;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 44px;
+  cursor: pointer;
+  z-index: 2;
+  letter-spacing: 0.03em;
+  transition: background 0.15s, transform 0.1s;
+  margin-bottom: 10px;
+  display: block;
+}
+.btn-spin:hover { background: #c4307a; transform: translateY(-1px); }
+.btn-spin:active { transform: translateY(1px); }
+.btn-spin:disabled { background: #C9B8D4; cursor: default; transform: none; }
 
-  .winner-box {
-    background: var(--bg3);
-    border: 2px solid var(--purple-mid);
-    border-radius: 14px;
-    padding: 18px 20px;
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    transition: border-color 0.4s;
-  }
+.btn-data {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  background: none;
+  border: 1px solid #C9B8D4;
+  color: #A084B0;
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s, border-color 0.2s;
+  display: block;
+}
+.btn-data:hover { color: #6B2D8B; border-color: #6B2D8B; }
 
-  .winner-box.revealed {
-    border-color: var(--gold);
-  }
+/* Winner overlay */
+#winner-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(107,45,139,0.55);
+  z-index: 30;
+  align-items: center;
+  justify-content: center;
+}
+#winner-overlay.show { display: flex; }
 
-  #rolling-name {
-    font-size: 20px;
-    font-weight: 500;
-    color: #CECBF6;
-    min-height: 30px;
-  }
+#winner-card {
+  background: #fff;
+  border: 4px solid #E03F8E;
+  border-radius: 20px;
+  padding: 36px 44px;
+  text-align: center;
+  max-width: 420px;
+  width: 88%;
+  animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+}
 
-  #winner-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 38px;
-    color: var(--gold);
-    letter-spacing: 0.04em;
-    display: none;
-  }
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
-  #winner-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
-    display: none;
-  }
+#winner-card .label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #E03F8E;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
 
-  #counter {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 14px;
-    min-height: 16px;
-  }
+#winner-card .name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: clamp(32px, 6vw, 52px);
+  color: #6B2D8B;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
 
-  .btn-draw {
-    background: var(--purple-mid);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 14px 40px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    width: 100%;
-    max-width: 280px;
-  }
-  .btn-draw:hover { background: var(--purple); }
-  .btn-draw:active { transform: scale(0.97); }
-  .btn-draw:disabled { background: #2a2860; color: #534AB7; cursor: default; }
+#winner-card .detail {
+  font-size: 13px;
+  color: #A084B0;
+  margin-bottom: 24px;
+}
 
-  .btn-reset {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    cursor: pointer;
-    text-decoration: underline;
-    margin-top: 10px;
-    display: none;
-  }
+#winner-card .prize {
+  background: #FFF0F7;
+  border: 1.5px solid #F5B8D8;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #6B2D8B;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
 
-  .stats-row {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 24px;
-  }
+.btn-close {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  background: #6B2D8B;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 32px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-close:hover { background: #55226F; }
 
-  .stat {
-    background: var(--bg2);
-    border: 1px solid rgba(127,119,221,0.15);
-    border-radius: 10px;
-    padding: 10px 16px;
-    text-align: center;
-    flex: 1;
-    max-width: 140px;
-  }
+/* Data modal */
+#modal-bg {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(107,45,139,0.4);
+  z-index: 20;
+  align-items: center;
+  justify-content: center;
+}
+#modal-bg.open { display: flex; }
 
-  .stat-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    color: var(--gold);
-    line-height: 1;
-  }
+#modal {
+  background: #fff;
+  border: 2px solid #C9B8D4;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 460px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
 
-  .stat-lbl {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 3px;
-  }
+#modal h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  color: #6B2D8B;
+  margin-bottom: 4px;
+}
 
-  .grid-label {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    text-align: center;
-  }
+#modal p {
+  font-size: 11px;
+  color: #A084B0;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
 
-  .participants {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 6px;
-    width: 100%;
-    max-width: 520px;
-  }
+.modal-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.modal-table th {
+  color: #6B2D8B;
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1.5px solid #EDE5F2;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Montserrat', sans-serif;
+}
+.modal-table td {
+  color: #333;
+  padding: 7px 8px;
+  border-bottom: 1px solid #F5F0F8;
+}
+.modal-table tr:last-child td { border-bottom: none; }
+.tix { color: #E03F8E !important; font-weight: 700; }
 
-  .chip {
-    background: var(--bg2);
-    border: 1px solid rgba(127,119,221,0.15);
-    border-radius: 8px;
-    padding: 8px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-    color: var(--text);
-    transition: background 0.3s, border-color 0.3s;
-  }
-
-  .chip .tix {
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .chip.winner {
-    background: rgba(250,199,117,0.12);
-    border-color: var(--gold);
-    color: var(--gold);
-  }
-
-  .chip.winner .tix { color: var(--gold-dark); }
-
-  footer {
-    margin-top: 48px;
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-  }
+.modal-close {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: 1.5px solid #C9B8D4;
+  color: #A084B0;
+  border-radius: 20px;
+  padding: 6px 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.15s, border-color 0.15s;
+}
+.modal-close:hover { color: #6B2D8B; border-color: #6B2D8B; }
 </style>
 </head>
 <body>
 
+<canvas id="confetti-canvas"></canvas>
+
 <header>
-  <div class="eyebrow">PPSWO Pledge Campaign · April 24 – May 8</div>
-  <h1>Drawing #1</h1>
-  <div class="sub">April 30 · Prize: PTO Day or $150 gift card of choice</div>
+  <h1>PPSWO Drawing #1</h1>
+  <div class="subtitle">April 30 · PTO Day or $150 Gift Card</div>
 </header>
 
-<div class="stats-row">
-  <div class="stat"><div class="stat-val">18</div><div class="stat-lbl">Pledgers</div></div>
-  <div class="stat"><div class="stat-val">164</div><div class="stat-lbl">Tickets</div></div>
-  <div class="stat"><div class="stat-val">Apr 24</div><div class="stat-lbl">Most entries (11)</div></div>
+<div id="wheel-wrap">
+  <div id="pointer"></div>
+  <canvas id="wheel-canvas"></canvas>
 </div>
 
-<div class="stage">
-  <div id="drum-wrap">
-    <canvas id="drum-canvas" width="560" height="560"></canvas>
-    <div id="drum-label">164 tickets<br>in the drum</div>
-  </div>
+<div id="status">Ready to spin!</div>
 
-  <div class="winner-box" id="winner-box">
-    <div id="rolling-name">Press draw to begin</div>
-    <div id="winner-name"></div>
-    <div id="winner-sub"></div>
-  </div>
+<button class="btn-spin" id="spin-btn" onclick="startSpin()">Spin to Win!</button>
+<button class="btn-data" onclick="openModal()">View participant data</button>
 
-  <div id="counter"></div>
-  <button class="btn-draw" id="draw-btn" onclick="startDraw()">Draw a winner</button>
-  <br>
-  <button class="btn-reset" id="reset-btn" onclick="resetDraw()">Draw again</button>
+<!-- Winner popup -->
+<div id="winner-overlay" class="show" style="display:none;">
+  <div id="winner-card">
+    <div class="label">Drawing #1 Winner</div>
+    <div class="name" id="card-name"></div>
+    <div class="detail" id="card-detail"></div>
+    <div class="prize">Prize: PTO Day &nbsp;·&nbsp; or $150 gift card of choice</div>
+    <button class="btn-close" onclick="closeWinner()">Awesome!</button>
+  </div>
 </div>
 
-<div class="grid-label">All participants</div>
-<div class="participants" id="participants"></div>
-
-<footer>Weighted raffle · Earlier pledges = more tickets · Drawn using cryptographic randomness</footer>
+<!-- Data modal -->
+<div id="modal-bg" onclick="bgClick(event)">
+  <div id="modal">
+    <h2>Participant data</h2>
+    <p>Tickets weighted by pledge date — earlier pledges earn more entries. Winner drawn using cryptographic randomness (crypto.getRandomValues).</p>
+    <table class="modal-table">
+      <thead><tr><th>Name</th><th>Pledged</th><th>Tickets</th></tr></thead>
+      <tbody id="modal-body"></tbody>
+    </table>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  </div>
+</div>
 
 <script>
 const pledgers = [
@@ -316,180 +343,191 @@ const pledgers = [
   { name: "Sarah Dahlston",     date: "Apr 30", entries: 7  },
 ];
 
-const ballColors = [
-  "#D85A30","#1D9E75","#7F77DD","#BA7517","#185FA5",
-  "#993556","#639922","#D4537E","#378ADD","#0F6E56",
-  "#534AB7","#993C1D","#3B6D11","#854F0B","#A32D2D",
-  "#0C447C","#72243E","#27500A"
+const SLICE_COLORS = [
+  "#6B2D8B","#E03F8E","#9B59B6","#F7A8D0","#5B1F7A",
+  "#E03F8E","#6B2D8B","#C9B8D4","#9B59B6","#E03F8E",
+  "#6B2D8B","#F7A8D0","#5B1F7A","#9B59B6","#E03F8E",
+  "#6B2D8B","#C9B8D4","#E03F8E"
 ];
+const TEXT_LIGHT = new Set([3,7,11]);
 
 const pool = [];
-pledgers.forEach(p => { for(let i=0;i<p.entries;i++) pool.push(p.name); });
+pledgers.forEach((p,i) => { for(let j=0;j<p.entries;j++) pool.push(i); });
 
-const canvas = document.getElementById('drum-canvas');
-const ctx = canvas.getContext('2d');
-const W=560,H=560,CX=280,CY=280,R=265;
-
-const balls = [];
-let animId=null, phase='idle', winnerName=null, winBall=null;
-let spinFrames=0, slowFrames=0;
-const totalSpin=140, totalSlow=90;
-
-function rr(a,b){ return a+Math.random()*(b-a); }
 function cr(max){ const a=new Uint32Array(1); crypto.getRandomValues(a); return a[0]%max; }
 
-function initBalls(){
-  balls.length=0;
-  pledgers.forEach((p,i)=>{
-    const angle=Math.random()*Math.PI*2;
-    const dist=rr(0,R*0.5);
-    balls.push({
-      x:CX+Math.cos(angle)*dist, y:CY+Math.sin(angle)*dist,
-      vx:rr(-1.5,1.5)||0.5, vy:rr(-1.5,1.5)||0.5,
-      r:38, color:ballColors[i%ballColors.length],
-      name:p.name, shortName:p.name.split(' ')[0], isWinner:false
-    });
-  });
-}
+const wCanvas = document.getElementById('wheel-canvas');
+const wCtx = wCanvas.getContext('2d');
+const SIZE = 600;
+wCanvas.width = SIZE; wCanvas.height = SIZE;
+const CX = SIZE/2, CY = SIZE/2, R = SIZE/2 - 8;
+const N = pledgers.length;
+const SLICE = (2*Math.PI)/N;
 
-function drawDrum(){
-  ctx.clearRect(0,0,W,H);
-  ctx.save();
-  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2); ctx.clip();
-  ctx.fillStyle='#0a0a18'; ctx.fill();
-  for(let ring=1;ring<=4;ring++){
-    ctx.beginPath(); ctx.arc(CX,CY,R*(ring/4),0,Math.PI*2);
-    ctx.strokeStyle=`rgba(83,74,183,${0.06+ring*0.03})`;
-    ctx.lineWidth=1; ctx.stroke();
+let angle = 0;
+let animId = null;
+let winnerIdx = null;
+let totalRotation = 0;
+let targetTotal = 0;
+let spinning = false;
+
+function drawWheel(a) {
+  wCtx.clearRect(0,0,SIZE,SIZE);
+  for(let i=0;i<N;i++){
+    const s = a + i*SLICE, e = s + SLICE;
+    wCtx.beginPath();
+    wCtx.moveTo(CX,CY);
+    wCtx.arc(CX,CY,R,s,e);
+    wCtx.closePath();
+    wCtx.fillStyle = SLICE_COLORS[i % SLICE_COLORS.length];
+    wCtx.fill();
+    wCtx.strokeStyle = '#F2EFF4';
+    wCtx.lineWidth = 2;
+    wCtx.stroke();
+
+    wCtx.save();
+    wCtx.translate(CX,CY);
+    wCtx.rotate(s + SLICE/2);
+    wCtx.textAlign = 'right';
+    const isLight = TEXT_LIGHT.has(i % SLICE_COLORS.length);
+    wCtx.fillStyle = isLight ? '#6B2D8B' : '#fff';
+    wCtx.font = `bold 12px 'DM Sans', sans-serif`;
+    const label = pledgers[i].name.split(' ')[0];
+    wCtx.fillText(label, R - 14, 4);
+    wCtx.restore();
   }
-  balls.forEach(b=>{
-    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-    ctx.fillStyle=b.isWinner?'#FAC775':b.color; ctx.fill();
-    ctx.strokeStyle=b.isWinner?'#EF9F27':'rgba(255,255,255,0.18)';
-    ctx.lineWidth=b.isWinner?3:1.5; ctx.stroke();
-    ctx.fillStyle='#fff';
-    ctx.font=`500 11px 'DM Sans', sans-serif`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    const s=b.shortName.length>8?b.shortName.slice(0,7)+'.':b.shortName;
-    ctx.fillText(s,b.x,b.y);
-  });
-  ctx.restore();
-  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2);
-  ctx.strokeStyle='rgba(127,119,221,0.35)'; ctx.lineWidth=5; ctx.stroke();
+
+  // center hub
+  wCtx.beginPath(); wCtx.arc(CX,CY,24,0,Math.PI*2);
+  wCtx.fillStyle = '#F2EFF4'; wCtx.fill();
+  wCtx.strokeStyle = '#6B2D8B'; wCtx.lineWidth = 3; wCtx.stroke();
+
+  wCtx.beginPath(); wCtx.arc(CX,CY,14,0,Math.PI*2);
+  wCtx.fillStyle = '#E03F8E'; wCtx.fill();
 }
 
-function physics(spd=1){
-  balls.forEach(b=>{
-    b.x+=b.vx*spd; b.y+=b.vy*spd;
-    const dx=b.x-CX,dy=b.y-CY,d=Math.sqrt(dx*dx+dy*dy);
-    if(d+b.r>R){
-      const nx=dx/d,ny=dy/d,dot=b.vx*nx+b.vy*ny;
-      b.vx-=2*dot*nx; b.vy-=2*dot*ny;
-      b.x=CX+nx*(R-b.r-1); b.y=CY+ny*(R-b.r-1);
-    }
-    const v=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
-    const mn=0.3*spd, mx=2.8*spd;
-    if(v<mn){b.vx*=mn/v;b.vy*=mn/v;}
-    if(v>mx){b.vx*=mx/v;b.vy*=mx/v;}
-  });
-  for(let i=0;i<balls.length;i++){
-    for(let j=i+1;j<balls.length;j++){
-      const a=balls[i],b=balls[j];
-      const dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy),mn=a.r+b.r;
-      if(d<mn&&d>0){
-        const nx=dx/d,ny=dy/d,ov=(mn-d)/2;
-        a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
-        const rv=a.vx-b.vx,ry=a.vy-b.vy,dot=rv*nx+ry*ny;
-        if(dot>0){a.vx-=dot*nx*0.8;a.vy-=dot*ny*0.8;b.vx+=dot*nx*0.8;b.vy+=dot*ny*0.8;}
-      }
-    }
+function getWinnerAtAngle(a) {
+  const norm = ((-a % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+  return Math.floor(norm / SLICE) % N;
+}
+
+function startSpin() {
+  if(spinning) return;
+  spinning = true;
+  document.getElementById('spin-btn').disabled = true;
+  document.getElementById('status').textContent = 'Spinning...';
+
+  // pick winner from weighted pool
+  winnerIdx = pool[cr(pool.length)];
+
+  // figure out how far we need to spin so winnerIdx lands under pointer
+  const curSlice = getWinnerAtAngle(angle);
+  const stepsNeeded = ((winnerIdx - curSlice) + N) % N;
+  // land in middle-ish of the slice with slight random offset
+  const landingOffset = SLICE * (0.2 + cr(600)/1000 * 0.6);
+  const spinRounds = (5 + cr(4)) * 2 * Math.PI; // 5-8 full rotations
+  targetTotal = totalRotation + spinRounds + stepsNeeded * SLICE + landingOffset;
+
+  animId = requestAnimationFrame(animSpin);
+}
+
+function animSpin() {
+  const remaining = targetTotal - totalRotation;
+
+  if(remaining <= 0) {
+    totalRotation = targetTotal;
+    angle = -totalRotation;
+    drawWheel(angle);
+    spinning = false;
+    setTimeout(revealWinner, 300);
+    return;
   }
+
+  // ease out — fast at start, slow at end
+  const progress = 1 - remaining / (targetTotal - (totalRotation - remaining < 0 ? 0 : totalRotation - remaining));
+  const speed = Math.max(0.012, 0.38 * Math.pow(remaining / (targetTotal * 0.5 + 0.001), 0.6));
+
+  totalRotation += Math.min(speed, remaining);
+  angle = -totalRotation;
+  drawWheel(angle);
+  animId = requestAnimationFrame(animSpin);
 }
 
-function animSpin(){
-  spinFrames++;
-  physics(1.8);
-  if(spinFrames%3===0) document.getElementById('rolling-name').textContent=pool[cr(pool.length)];
-  drawDrum();
-  if(spinFrames<totalSpin){ animId=requestAnimationFrame(animSpin); }
-  else { doPickWinner(); }
+function revealWinner() {
+  const w = pledgers[winnerIdx];
+  document.getElementById('card-name').textContent = w.name;
+  document.getElementById('card-detail').textContent = `Pledged ${w.date} · ${w.entries} tickets in the pool`;
+  document.getElementById('winner-overlay').style.display = 'flex';
+  document.getElementById('status').textContent = '';
+  launchConfetti();
 }
 
-function doPickWinner(){
-  const idx=cr(pool.length);
-  winnerName=pool[idx];
-  winBall=balls.find(b=>b.name===winnerName);
-  winBall.isWinner=true;
-  slowFrames=0; phase='slow';
-  animId=requestAnimationFrame(animSlow);
+function closeWinner() {
+  document.getElementById('winner-overlay').style.display = 'none';
+  document.getElementById('spin-btn').disabled = false;
+  document.getElementById('status').textContent = 'Ready to spin!';
+  winnerIdx = null;
 }
 
-function animSlow(){
-  slowFrames++;
-  const t=slowFrames/totalSlow;
-  physics(1.8*(1-t)+0.05*t);
-  document.getElementById('rolling-name').textContent=winnerName;
-  drawDrum();
-  if(slowFrames<totalSlow){ animId=requestAnimationFrame(animSlow); }
-  else { revealWinner(); }
-}
+function openModal() { document.getElementById('modal-bg').classList.add('open'); }
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
+function bgClick(e) { if(e.target===document.getElementById('modal-bg')) closeModal(); }
 
-function revealWinner(){
-  phase='done'; drawDrum();
-  const pData=pledgers.find(p=>p.name===winnerName);
-  document.getElementById('rolling-name').style.display='none';
-  const wn=document.getElementById('winner-name');
-  wn.textContent=winnerName; wn.style.display='block';
-  const ws=document.getElementById('winner-sub');
-  ws.textContent=`Pledged ${pData.date} · ${pData.entries} tickets`; ws.style.display='block';
-  document.getElementById('winner-box').classList.add('revealed');
-  document.getElementById('draw-btn').style.display='none';
-  document.getElementById('reset-btn').style.display='inline';
-  document.getElementById('drum-label').style.display='none';
-  document.getElementById('counter').textContent='';
-  const chip=document.getElementById('chip-'+winnerName.replace(/[\s]/g,'_'));
-  if(chip) chip.classList.add('winner');
-}
-
-function startDraw(){
-  cancelAnimationFrame(idleId);
-  document.getElementById('draw-btn').disabled=true;
-  document.getElementById('drum-label').style.display='none';
-  document.getElementById('counter').textContent='Shuffling 164 tickets...';
-  phase='spin'; spinFrames=0;
-  balls.forEach(b=>{ b.vx=rr(-2.5,2.5)||1; b.vy=rr(-2.5,2.5)||1; });
-  animId=requestAnimationFrame(animSpin);
-}
-
-function resetDraw(){
-  cancelAnimationFrame(animId);
-  winnerName=null; winBall=null; phase='idle'; spinFrames=0; slowFrames=0;
-  document.getElementById('rolling-name').textContent='Press draw to begin';
-  document.getElementById('rolling-name').style.display='block';
-  document.getElementById('winner-name').style.display='none';
-  document.getElementById('winner-sub').style.display='none';
-  document.getElementById('winner-box').classList.remove('revealed');
-  document.getElementById('draw-btn').disabled=false;
-  document.getElementById('draw-btn').style.display='inline-block';
-  document.getElementById('reset-btn').style.display='none';
-  document.getElementById('drum-label').style.display='block';
-  document.getElementById('counter').textContent='';
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('winner'));
-  initBalls(); drawDrum(); idleAnimate();
-}
-
-const pGrid=document.getElementById('participants');
-pledgers.forEach(p=>{
-  const c=document.createElement('div');
-  c.className='chip'; c.id='chip-'+p.name.replace(/[\s]/g,'_');
-  c.innerHTML=`<span>${p.name}</span><span class="tix">${p.entries} tkts</span>`;
-  pGrid.appendChild(c);
+const tbody = document.getElementById('modal-body');
+pledgers.forEach(p => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${p.name}</td><td>${p.date}</td><td class="tix">${p.entries}</td>`;
+  tbody.appendChild(tr);
 });
+const tot = document.createElement('tr');
+tot.innerHTML = `<td colspan="2" style="color:#A084B0;font-size:11px;padding-top:10px;">Total tickets in pool</td><td class="tix" style="padding-top:10px;">164</td>`;
+tbody.appendChild(tot);
 
-initBalls(); drawDrum();
-let idleId;
-function idleAnimate(){ physics(0.25); drawDrum(); idleId=requestAnimationFrame(idleAnimate); }
-idleAnimate();
+// Confetti
+const cCanvas = document.getElementById('confetti-canvas');
+const cCtx = cCanvas.getContext('2d');
+let pieces = [];
+const CCOLORS = ['#E03F8E','#6B2D8B','#F7A8D0','#9B59B6','#fff','#C9B8D4','#5B1F7A'];
+
+function resizeC(){ cCanvas.width=window.innerWidth; cCanvas.height=window.innerHeight; }
+resizeC(); window.addEventListener('resize',resizeC);
+
+function launchConfetti(){
+  pieces=[];
+  for(let i=0;i<250;i++){
+    pieces.push({
+      x: Math.random()*cCanvas.width,
+      y: -10-Math.random()*250,
+      w: 9+Math.random()*9, h: 5+Math.random()*5,
+      color: CCOLORS[Math.floor(Math.random()*CCOLORS.length)],
+      vx: (Math.random()-0.5)*6,
+      vy: 2+Math.random()*5,
+      rot: Math.random()*360,
+      vrot: (Math.random()-0.5)*12,
+    });
+  }
+  animC();
+}
+
+function animC(){
+  cCtx.clearRect(0,0,cCanvas.width,cCanvas.height);
+  let any=false;
+  pieces.forEach(p=>{
+    if(p.y>cCanvas.height+20) return;
+    any=true;
+    p.x+=p.vx; p.y+=p.vy; p.rot+=p.vrot; p.vy+=0.09;
+    cCtx.save();
+    cCtx.translate(p.x,p.y);
+    cCtx.rotate(p.rot*Math.PI/180);
+    cCtx.fillStyle=p.color;
+    cCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    cCtx.restore();
+  });
+  if(any) requestAnimationFrame(animC);
+  else cCtx.clearRect(0,0,cCanvas.width,cCanvas.height);
+}
+
+drawWheel(angle);
 </script>
 </body>
 </html>
