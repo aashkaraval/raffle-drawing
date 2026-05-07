@@ -471,7 +471,7 @@ body {
       </div>
       <div class="drawing-opt" id="opt-2" onclick="selectDrawing(2)">
         <div class="d-num">#2</div>
-        <div class="d-date">Apr 24 – May 5</div>
+        <div class="d-date">Apr 24 – May 7</div>
         <div class="d-prize">1 mo. parking or $100 gift card</div>
       </div>
     </div>
@@ -557,7 +557,7 @@ let animId = null;
 
 const CUTOFFS = {
   1: new Date('2026-04-30T12:00:00'),
-  2: new Date('2026-05-05T12:00:00'),
+  2: new Date('2026-05-07T12:00:00'), // Updated: anyone who pledged before May 7, 2026
 };
 
 const PRIZES = {
@@ -578,6 +578,8 @@ const ENTRY_RULES = [
   { date: '2026-05-03', entries: 4 },
   { date: '2026-05-04', entries: 4 },
   { date: '2026-05-05', entries: 4 },
+  { date: '2026-05-06', entries: 3 },
+  { date: '2026-05-07', entries: 2 },
 ];
 
 function getEntries(dt) {
@@ -727,7 +729,7 @@ function goToWheel() {
   eligiblePledgers.forEach((p,i) => { for(let j=0;j<p.entries;j++) pool.push(i); });
 
   document.getElementById('wheel-title').textContent = `PPSWO Drawing #${selectedDrawing}`;
-  const cutoffStr = selectedDrawing === 1 ? 'Apr 24 – Apr 30' : 'Apr 24 – May 5';
+  const cutoffStr = selectedDrawing === 1 ? 'Apr 24 – Apr 30' : 'Apr 24 – May 7';
   document.getElementById('wheel-subtitle').textContent = `${cutoffStr}  ·  ${eligiblePledgers.length} participants  ·  ${pool.length} tickets`;
 
   angle = 0; totalRotation = 0; targetTotal = 0; winnerIdx = null; spinning = false;
